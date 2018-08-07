@@ -2,6 +2,9 @@
 name = "testing_logger"
 version = "0.1.0"
 authors = ["brucechapman <bruce.chapman.nz@gmail.com>"]
+license = "BSD-3-Clause"
+description = "Supports writing tests to verify `Log` crate calls"
+repository = "https://github.com/brucechapman/rust_testing_logger"
 
 [dependencies]
 log = "0.4.3"
