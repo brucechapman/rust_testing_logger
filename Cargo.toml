@@ -1,7 +1,7 @@
 [package]
 name = "testing_logger"
 version = "0.1.0"
-authors = ["brucechapman <bruce.chapman.nz@gmail.com>"]
+authors = ["brucechapman <bruce.chapman.nz@gmail.com>", "NEC New Zealand Limited"]
 license = "BSD-3-Clause"
 description = "Supports writing tests to verify `Log` crate calls"
 repository = "https://github.com/brucechapman/rust_testing_logger"
