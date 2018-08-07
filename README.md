@@ -1,10 +1,11 @@
-# rust_testing_logger
-A Rust library to support testing of code that uses Log crate.
+# testing_logger
+A Rust library to support testing of code that uses `log` crate.
 
 [![Version][version-img]][version-url] [![Documentation][doc-img]][doc-url]
 ![license][license-img]
 [![Status][status-img]][status-url]
 ## Example
+
 ```rust
 #[macro_use]
 extern crate log;
@@ -22,11 +23,11 @@ fn test_something() {
     });
 }
 ```
+
 [status-img]:https://travis-ci.com/brucechapman/rust_testing_logger.svg?branch=master
 [status-url]:https://travis-ci.com/brucechapman/rust_testing_logger
 [version-img]:https://img.shields.io/crates/v/testing_logger.svg
 [version-url]:https://crates.io/crates/testing_logger
-
 [doc-img]:https://docs.rs/testing_logger/badge.svg
 [doc-url]:https://docs.rs/testing_logger
 [license-img]:https://img.shields.io/crates/l/testing_logger.svg
