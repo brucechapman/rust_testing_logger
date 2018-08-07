@@ -1,5 +1,6 @@
 # rust_testing_logger
 A Rust library to support testing of code that uses Log crate.
+
 [![Version][version-img]][version-url] [![Documentation][doc-img]][doc-url]
 ![license][license-img]
 [![Status][status-img]][status-url]
