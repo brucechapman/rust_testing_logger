@@ -5,6 +5,11 @@ authors = ["brucechapman <bruce.chapman.nz@gmail.com>"]
 license = "BSD-3-Clause"
 description = "Supports writing tests to verify `Log` crate calls"
 repository = "https://github.com/brucechapman/rust_testing_logger"
+readme = "README.md"
+categories = ["development-tools::testing", "development-tools::debugging"]
+keywords = ["testing", "logging", "log"]
+[badges]
+travis-ci = { repository = "brucechapman/rust_testing_logger", branch = "master" }
 
 [dependencies]
 log = "0.4.3"
