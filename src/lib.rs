@@ -59,15 +59,24 @@ use std::sync::{Once, ONCE_INIT};
 
 /// A captured call to the logging system. A `Vec` of these is passed
 /// to the closure supplied to the `validate()` function.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct CapturedLog {
+#[derive(Clone, Debug)]
+pub struct CapturedLog<S = String> {
     /// The formatted log message.
-    pub body: String,
+    pub body: S,
     /// The level.
     pub level: Level,
     /// The target.
-    pub target: String,
+    pub target: S,
 }
+
+impl<S1: PartialEq<S2>, S2: PartialEq> PartialEq<CapturedLog<S2>> for CapturedLog<S1> {
+    fn eq(&self, other: &CapturedLog<S2>) -> bool {
+        self.body == other.body && self.level == other.level && self.target == other.target
+    }
+}
+
+impl<S: Eq> Eq for CapturedLog<S> {}
+
 
 thread_local!(static LOG_RECORDS: RefCell<Vec<CapturedLog>> = RefCell::new(Vec::with_capacity(3)));
 
@@ -148,29 +157,29 @@ mod test {
                 records,
                 &[
                     CapturedLog {
-                        body: "trace".to_string(),
+                        body: "trace",
                         level: Level::Trace,
-                        target: TARGET.to_string(),
+                        target: TARGET,
                     },
                     CapturedLog {
-                        body: "debug".to_string(),
+                        body: "debug",
                         level: Level::Debug,
-                        target: TARGET.to_string(),
+                        target: TARGET,
                     },
                     CapturedLog {
-                        body: "info".to_string(),
+                        body: "info",
                         level: Level::Info,
-                        target: TARGET.to_string(),
+                        target: TARGET,
                     },
                     CapturedLog {
-                        body: "warn".to_string(),
+                        body: "warn",
                         level: Level::Warn,
-                        target: TARGET.to_string(),
+                        target: TARGET,
                     },
                     CapturedLog {
-                        body: "error".to_string(),
+                        body: "error",
                         level: Level::Error,
-                        target: TARGET.to_string(),
+                        target: TARGET,
                     },
                 ]
             );
