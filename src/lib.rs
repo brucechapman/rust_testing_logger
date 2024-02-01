@@ -53,50 +53,58 @@
 //! ```
 
 extern crate log;
-use log::{Log, Record, Metadata, LevelFilter, Level};
+use log::{Level, LevelFilter, Log, Metadata, Record};
 use std::cell::RefCell;
 use std::sync::{Once, ONCE_INIT};
 
 /// A captured call to the logging system. A `Vec` of these is passed
 /// to the closure supplied to the `validate()` function.
-pub struct CapturedLog {
+#[derive(Clone, Debug)]
+pub struct CapturedLog<S = String> {
     /// The formatted log message.
-    pub body: String,
+    pub body: S,
     /// The level.
     pub level: Level,
     /// The target.
-    pub target: String
+    pub target: S,
 }
+
+impl<S1: PartialEq<S2>, S2: PartialEq> PartialEq<CapturedLog<S2>> for CapturedLog<S1> {
+    fn eq(&self, other: &CapturedLog<S2>) -> bool {
+        self.body == other.body && self.level == other.level && self.target == other.target
+    }
+}
+
+impl<S: Eq> Eq for CapturedLog<S> {}
+
 
 thread_local!(static LOG_RECORDS: RefCell<Vec<CapturedLog>> = RefCell::new(Vec::with_capacity(3)));
 
 struct TestingLogger {}
 
 impl Log for TestingLogger {
-
     #[allow(unused_variables)]
     fn enabled(&self, metadata: &Metadata) -> bool {
         true // capture all log levels
     }
 
-    fn log(& self, record: &Record) {
-        LOG_RECORDS.with( |records| {
+    fn log(&self, record: &Record) {
+        LOG_RECORDS.with(|records| {
             let captured_record = CapturedLog {
-                body: format!("{}",record.args()),
+                body: format!("{}", record.args()),
                 level: record.level(),
-                target: record.target().to_string()
+                target: record.target().to_string(),
             };
             records.borrow_mut().push(captured_record);
         });
     }
 
     fn flush(&self) {}
-
 }
 
 static FIRST_TEST: Once = ONCE_INIT;
 
-static TEST_LOGGER: TestingLogger = TestingLogger{};
+static TEST_LOGGER: TestingLogger = TestingLogger {};
 
 /// Prepare the `testing_logger` to capture log messages for a test.
 ///
@@ -104,11 +112,12 @@ static TEST_LOGGER: TestingLogger = TestingLogger{};
 /// This function will install an internal `TestingLogger` as the logger if not already done so, and initialise
 /// its thread local storage for a new test.
 pub fn setup() {
-    FIRST_TEST.call_once( || {
-        log::set_logger(&TEST_LOGGER).map(|()|
-        log::set_max_level(LevelFilter::Trace)).unwrap();
+    FIRST_TEST.call_once(|| {
+        log::set_logger(&TEST_LOGGER)
+            .map(|()| log::set_max_level(LevelFilter::Trace))
+            .unwrap();
     });
-    LOG_RECORDS.with( |records| {
+    LOG_RECORDS.with(|records| {
         records.borrow_mut().truncate(0);
     });
 }
@@ -117,9 +126,63 @@ pub fn setup() {
 ///
 /// the `asserter` closure can check the number, body, target and level
 /// of captured log events. As a side effect, the records are cleared.
-pub fn validate<F>(asserter: F)  where F: Fn(&Vec<CapturedLog>) {
-    LOG_RECORDS.with( |records| {
+pub fn validate<F>(asserter: F)
+where
+    F: Fn(&Vec<CapturedLog>),
+{
+    LOG_RECORDS.with(|records| {
         asserter(&records.borrow());
         records.borrow_mut().truncate(0);
     });
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn captures_logs() {
+        setup();
+
+        log::trace!("trace");
+        log::debug!("debug");
+        log::info!("info");
+        log::warn!("warn");
+        log::error!("error");
+
+        const TARGET: &'static str = "testing_logger::test";
+
+        validate(|records| {
+            assert_eq!(
+                records,
+                &[
+                    CapturedLog {
+                        body: "trace",
+                        level: Level::Trace,
+                        target: TARGET,
+                    },
+                    CapturedLog {
+                        body: "debug",
+                        level: Level::Debug,
+                        target: TARGET,
+                    },
+                    CapturedLog {
+                        body: "info",
+                        level: Level::Info,
+                        target: TARGET,
+                    },
+                    CapturedLog {
+                        body: "warn",
+                        level: Level::Warn,
+                        target: TARGET,
+                    },
+                    CapturedLog {
+                        body: "error",
+                        level: Level::Error,
+                        target: TARGET,
+                    },
+                ]
+            );
+        })
+    }
 }
